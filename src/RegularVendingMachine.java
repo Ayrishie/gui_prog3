@@ -61,7 +61,6 @@ public class RegularVendingMachine {
         System.out.println("itemQuantities size: " + itemQuantities.size());
         // System.out.println("itemPrices size: " + itemPropertiesMap.size());
         System.out.println("itemNames size: " + Item.itemNames.size());
-
         System.out.println("itemCalories size: " + itemCalories.size());
 
 
@@ -192,6 +191,12 @@ public class RegularVendingMachine {
     }
 
 
+    public List<Integer> getDenominationQuantities() {
+        return Collections.unmodifiableList(denominationQuantities);
+    }
+
+
+
     public String generateSummary() {
         StringBuilder summary = new StringBuilder();
         try {
@@ -219,7 +224,7 @@ public class RegularVendingMachine {
             summary.append("|----------------------------------\n");
 
         } catch (IndexOutOfBoundsException e) {
-            return "Index out of bounds. Please ensure the item quantities are initialized properly.";
+            return "Change: Index out of bounds. Please ensure the item quantities are initialized properly.";
         } catch (NullPointerException e) {
             return "Error: Null pointer. Please ensure the item properties map is not empty.";
         } catch (Exception e) {
@@ -282,7 +287,7 @@ public class RegularVendingMachine {
 
             return true;
         } catch (IndexOutOfBoundsException e) {
-            System.out.println("Index out of bounds. Please ensure the denomination quantities are initialized properly.");
+            System.out.println("Bills : Index out of bounds. Please ensure the denomination quantities are initialized properly.");
             return false;
         } catch (ArithmeticException e) {
             System.out.println("Arithmetic error occurred: " + e.getMessage());
@@ -356,7 +361,7 @@ public class RegularVendingMachine {
      * denomination in the denominationValues list.
      * @return The method is returning a boolean value.
      */
-    public boolean processTransaction(int slot, int paymentDenomination) throws IllegalArgumentException {
+    public double processTransaction(int slot, int paymentDenomination) throws IllegalArgumentException {
         try {
             // Get item properties from the itemPropertiesMap
             slot -= 1; // Subtract 1 from the slot to convert to 0-based index
@@ -371,14 +376,14 @@ public class RegularVendingMachine {
             int quantity = item.getInitialQuantities().get(slot); // Assuming you want the initial quantity for slot 0
             if (quantity <= 0) {
                 System.out.println("Item out of stock.");
-                return false;
+                return -1.0;
             }
-            
+
 
             // Check if the payment denomination is valid
             if (paymentDenomination < 1 || paymentDenomination > DENOMINATION_COUNT) {
                 System.out.println("Invalid payment denomination.");
-                return false;
+                return -1.0;
             }
 
             // Check if payment amount is sufficient
@@ -395,7 +400,7 @@ public class RegularVendingMachine {
 
                 if (additionalPaymentDenomination == 0) {
                     System.out.println("Transaction canceled.");
-                    return false;
+                    return -1.0;
                 }
 
                 double additionalPaymentAmount = denominationValues.get(additionalPaymentDenomination - 1);
@@ -405,7 +410,7 @@ public class RegularVendingMachine {
 
                 if (paymentAmount < price) {
                     System.out.println("Still insufficient payment. Transaction canceled.");
-                    return false;
+                    return -1.0;
                 }
             }
 
@@ -413,8 +418,9 @@ public class RegularVendingMachine {
             double change = paymentAmount - price;
 
             if (!giveChange(change)) {
-                return false;
+                return -1.0;
             }
+
 
             // Update item quantities and sales
             int updatedQuantity = item.getQuantity() - 1;
@@ -429,16 +435,16 @@ public class RegularVendingMachine {
             printReceipt(slot, item.getInitialQuantities().get(slot), change);
             displayItems();
 
-            return true;
+            return change;
         } catch (IndexOutOfBoundsException e) {
-            System.out.println("Index out of bounds. Please ensure the item quantities are initialized properly.");
-            return false;
+            System.out.println("Process: Index out of bounds. Please ensure the item quantities are initialized properly.");
+            return -1.0;
         } catch (ArithmeticException e) {
             System.out.println("Arithmetic error occurred: " + e.getMessage());
-            return false;
+            return -1.0;
         } catch (Exception e) {
             System.out.println("An unexpected error occurred: " + e.getMessage());
-            return false;
+            return -1.0;
         }
     }
 

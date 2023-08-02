@@ -339,7 +339,9 @@ public class Menu {
             return;
         }
 
-        if (rVendingMachine.processTransaction(slotNumber, paymentDenomination)) {
+        double NegativeChecker = rVendingMachine.processTransaction(slotNumber, paymentDenomination);
+
+        if (NegativeChecker == 1.00) {
             System.out.println();
             System.out.println("Transaction completed successfully.");
             System.out.println();
