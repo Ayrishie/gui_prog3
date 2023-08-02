@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.image.ShortLookupTable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -105,7 +107,6 @@ public class TestRegularMachineView {
             int slot = Integer.parseInt(getItemNumber());
             int paymentDenomination = Integer.parseInt(getPaymentDenomination());
 
-
             if (slot < 0 || slot >= Item.getItemNames().size()) {
                 showMessage("Invalid slot number selected.");
                 return false;
@@ -116,23 +117,28 @@ public class TestRegularMachineView {
 
             if (change >= 0) {
                 showMessage("Transaction successful!");
-                updateItemTable();
-                showAvailableChange(vendingMachine.calculateChangeQuantities(change), vendingMachine.getDenominationValues());
 
                 // Update quantities and display items
                 Item item = Item.getItemProperties(Item.getItemNames().get(slot));
                 int updatedQuantity = item.getQuantity() - 1;
                 item.setQuantity(updatedQuantity);
 
+                int[] changeQuantities = vendingMachine.calculateChangeQuantities(change);
+
+                List<Integer> changeQuantitiesList = new ArrayList<>();
+                for (int quantity : changeQuantities) {
+                    changeQuantitiesList.add(quantity);
+                }
+
+                giveChange(change, changeQuantities, vendingMachine.getDenominationQuantities(), vendingMachine.getDenominationValues()); // Corrected parameter list
+
                 // Print the receipt
-                ReceiptDialog receiptDialog = new ReceiptDialog(frame, slot, updatedQuantity, change,
-                        vendingMachine.getDenominationQuantities(), vendingMachine.getDenominationValues());
+                ReceiptDialog receiptDialog = new ReceiptDialog(frame, slot, updatedQuantity, change,  changeQuantitiesList,
+                        vendingMachine.getDenominationValues());
+
                 receiptDialog.showDialog();
 
                 JOptionPane.showMessageDialog(frame, "Change: " + change, "Change", JOptionPane.INFORMATION_MESSAGE);
-
-
-
 
                 return true;
             } else {
@@ -152,25 +158,60 @@ public class TestRegularMachineView {
     }
 
 
-    public void showAvailableChange(int[] changeQuantities, List<Integer> denominationValues) {
-        JFrame changeFrame = new JFrame("Change");
-        changeFrame.setLayout(new BoxLayout(changeFrame.getContentPane(), BoxLayout.Y_AXIS));
+    public boolean giveChange(double change, int[] changeQuantities, List<Integer> denominationQuantities, List<Integer> denominationValues) {
+        try {
+            System.out.println("|============================================|");
+            System.out.println("|========= Available Bills For Change =======|");
+            System.out.println("|============================================|");
 
-        JTextArea changeTextArea = new JTextArea(10, 30);
-        changeTextArea.setEditable(false);
-
-        for (int i = 0; i < changeQuantities.length; i++) {
-            if (changeQuantities[i] > 0) {
-                changeTextArea.append("$" + denominationValues.get(i) + " x " + changeQuantities[i] + "\n");
+            if (changeQuantities == null) {
+                return false; // Change cannot be given exactly
             }
-        }
 
-        changeFrame.add(new JScrollPane(changeTextArea));
-        changeFrame.pack();
-        changeFrame.setVisible(true);
+            for (int i = changeQuantities.length - 1; i >= 0; i--) {
+                int denominationValue = denominationValues.get(i);
+                int availableBillCount = denominationQuantities.get(i);
+                int usedBillCount = changeQuantities[i];
+
+                System.out.printf("| %2d.......$%-4d: %3d%28s |\n", i + 1, denominationValue, availableBillCount, "");
+
+                if (change <= 0) {
+                    break;
+                }
+            }
+            System.out.println("|============================================|");
+
+            // Update the denominationQuantities only if the transaction is successful
+            for (int i = 0; i < changeQuantities.length; i++) {
+                int availableBillCount = denominationQuantities.get(i);
+                int usedBillCount = changeQuantities[i];
+                denominationQuantities.set(i, availableBillCount - usedBillCount);
+            }
+
+            return true;
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Bills : Index out of bounds. Please ensure the denomination quantities are initialized properly.");
+            return false;
+        } catch (ArithmeticException e) {
+            System.out.println("Arithmetic error occurred: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            System.out.println("An unexpected error occurred: " + e.getMessage());
+            return false;
+        }
     }
 
+
+
     private class ReceiptDialog extends JDialog {
+        private double getTotalSales() {
+            return vendingMachine.getTotalSales(); // Call the method from RegularVendingMachine
+        }
+
+        private int getTransactionCount() {
+            return vendingMachine.getTransactionCount(); // Call the method from RegularVendingMachine
+        }
+
         public ReceiptDialog(JFrame parent, int slot, int quantity, double change, List<Integer> denominationQuantities, List<Integer> denominationValues) {
             super(parent, "Receipt", true);
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -180,6 +221,8 @@ public class TestRegularMachineView {
             JTextArea receiptTextArea = new JTextArea();
             receiptTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
             receiptTextArea.setEditable(false);
+
+
 
             receiptTextArea.append("==============================================\n");
             receiptTextArea.append("|           RAIO  Vending Machine            |\n");
@@ -218,15 +261,6 @@ public class TestRegularMachineView {
             return "Item Name";
         }
 
-        private double getTotalSales() {
-            // Replace with your logic to get the total sales
-            return 0.0;
-        }
-
-        private int getTransactionCount() {
-            // Replace with your logic to get the transaction count
-            return 0;
-        }
 
         public void showDialog() {
             setVisible(true);

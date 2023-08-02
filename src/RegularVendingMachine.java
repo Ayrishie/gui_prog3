@@ -191,6 +191,17 @@ public class RegularVendingMachine {
     }
 
 
+    public double getTotalSales() {
+        // Replace this with your logic to calculate the actual total sales
+        return totalSales;
+    }
+
+    public int getTransactionCount() {
+        // Replace this with your logic to calculate the actual transaction count
+        return transactionCount;
+    }
+
+
     public List<Integer> getDenominationQuantities() {
         return Collections.unmodifiableList(denominationQuantities);
     }
@@ -593,14 +604,6 @@ public class RegularVendingMachine {
         soldItemQuantities = new ArrayList<>(Collections.nCopies(SLOT_COUNT, 0));
     }
 
-    /**
-     * The function returns the total sales as a double value.
-     *
-     * @return The method is returning the value of the variable totalSales, which is of type double.
-     */
-    public double getTotalSales() {
-        return totalSales;
-    }
 
     /** The above code is defining a method called "resetTotalSales" in a Java class. This method sets
      * the value of a variable called "totalSales" to 0.0.
