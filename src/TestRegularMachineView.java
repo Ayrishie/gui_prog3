@@ -35,6 +35,7 @@ public class TestRegularMachineView {
         columnNames.add("Quantity");
         columnNames.add("Price");
         columnNames.add("Calories");
+        columnNames.add("Denomination"); // New column for denomination values
 
         tableModel = new DefaultTableModel(columnNames, 0);  // 0 indicates no rows initially
         itemTable = new JTable(tableModel);
@@ -73,6 +74,9 @@ public class TestRegularMachineView {
             rowData.add("$" + item.getPrice());
             rowData.add(item.getCalories());
             List<Integer> denominationValues = vendingMachine.getDenominationValues();
+            System.out.println("Denomination Value: " + denominationValues.get(i));
+            rowData.add(denominationValues.get(i)); // New column for denomination values
+
             rowData.add(denominationValues.get(i)); // Assuming the denominationValues list contains Integer values.
             tableModel.addRow(rowData);
         }
@@ -123,7 +127,7 @@ public class TestRegularMachineView {
                 int updatedQuantity = item.getQuantity() - 1;
                 item.setQuantity(updatedQuantity);
 
-                int[] changeQuantities = vendingMachine.calculateChangeQuantities(change);
+               int[] changeQuantities = vendingMachine.calculateChangeQuantities(change);
 
                 List<Integer> changeQuantitiesList = new ArrayList<>();
                 for (int quantity : changeQuantities) {
@@ -132,13 +136,15 @@ public class TestRegularMachineView {
 
                 giveChange(change, changeQuantities, vendingMachine.getDenominationQuantities(), vendingMachine.getDenominationValues()); // Corrected parameter list
 
+                JOptionPane.showMessageDialog(frame, "Change: " + change, "Change", JOptionPane.INFORMATION_MESSAGE);
+
                 // Print the receipt
                 ReceiptDialog receiptDialog = new ReceiptDialog(frame, slot, updatedQuantity, change,  changeQuantitiesList,
                         vendingMachine.getDenominationValues());
 
                 receiptDialog.showDialog();
 
-                JOptionPane.showMessageDialog(frame, "Change: " + change, "Change", JOptionPane.INFORMATION_MESSAGE);
+
 
                 return true;
             } else {

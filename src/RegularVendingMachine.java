@@ -80,7 +80,6 @@ public class RegularVendingMachine {
 
     // Rest of the RegularVendingMachine class
 
-
     /**
      * Sets the names of the denominations used in the vending machine.
      */
