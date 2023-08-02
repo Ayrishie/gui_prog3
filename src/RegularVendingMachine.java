@@ -373,6 +373,7 @@ public class RegularVendingMachine {
                 System.out.println("Item out of stock.");
                 return false;
             }
+            
 
             // Check if the payment denomination is valid
             if (paymentDenomination < 1 || paymentDenomination > DENOMINATION_COUNT) {

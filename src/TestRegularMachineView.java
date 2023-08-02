@@ -118,6 +118,7 @@ public class TestRegularMachineView {
                 return false;
             }
 
+
             // Check if the payment denomination is valid
             List<Integer> denominationValues = vendingMachine.getDenominationValues();
             if (paymentDenomination <= 0 || paymentDenomination > denominationValues.size()) {
